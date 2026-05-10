@@ -46,7 +46,7 @@ class SHDBase(nn.Module):
         Stage 2: Embed-Max  / SSA token mixing
     """
     def __init__(self, in_channels=1, num_classes=20,
-                 embed_dims=256, mlp_ratio=1.0, T=16):
+                 embed_dims=256, mlp_ratio=1.0, T=16, **kwargs):
         super().__init__()
         self.T = T
         self.num_classes = num_classes
@@ -102,7 +102,7 @@ class SHDBase(nn.Module):
 
 class SHDMaxFormerAvg(SHDBase):
     def __init__(self, in_channels=1, num_classes=20,
-                 embed_dims=256, mlp_ratio=1.0, T=16):
+                 embed_dims=256, mlp_ratio=1.0, T=16, **kwargs):
         super().__init__(in_channels, num_classes, embed_dims, mlp_ratio, T)
 
         # Stage 1: plain embedding, AvgPool token mixing
@@ -125,7 +125,7 @@ class SHDMaxFormerAvg(SHDBase):
 
 class SHDMaxFormerMax(SHDBase):
     def __init__(self, in_channels=1, num_classes=20,
-                 embed_dims=256, mlp_ratio=1.0, T=16):
+                 embed_dims=256, mlp_ratio=1.0, T=16, **kwargs):
         super().__init__(in_channels, num_classes, embed_dims, mlp_ratio, T)
 
         # Stage 1: plain embedding, MaxPool token mixing
@@ -148,7 +148,7 @@ class SHDMaxFormerMax(SHDBase):
 
 class SHDMaxFormer(SHDBase):
     def __init__(self, in_channels=1, num_classes=20,
-                 embed_dims=256, mlp_ratio=1.0, T=16):
+                 embed_dims=256, mlp_ratio=1.0, T=16, **kwargs):
         super().__init__(in_channels, num_classes, embed_dims, mlp_ratio, T)
 
         # Stage 1: Embed-Max+ embedding, DWC-3 token mixing
