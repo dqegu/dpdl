@@ -1,69 +1,54 @@
-#!/bin/bash
-# =============================================================================
-# run_iridis.sh — SLURM array job for SHD MaxFormer experiments on Iridis
-#
-# Submits 5 seeds × 5 model conditions = 25 jobs in parallel.
-# Each job takes ~2 hours on a single GPU for 96 epochs on SHD.
-# Total wall-clock time with parallelism: ~2-3 hours.
-#
-# Usage:
-#   sbatch run_iridis.sh
-#
-# After all jobs complete, run the analysis:
-#   sbatch run_analysis.sh
-# =============================================================================
-
-#SBATCH --job-name=shd_maxformer
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=4
+#!/bin/bash -l
+#SBATCH -p l4,scavenger_l4,ecsstudents_l4
 #SBATCH --gres=gpu:1
-#SBATCH --time=04:00:00
-#SBATCH --mem=32G
-#SBATCH --partition=gpu
-#SBATCH --array=0-24          # 5 seeds × 5 conditions = 25 jobs
-#SBATCH --output=slurm_logs/shd_%A_%a.out
-#SBATCH --error=slurm_logs/shd_%A_%a.err
+#SBATCH --nodes=1
+#SBATCH -c 8
+#SBATCH --mem=64G
+#SBATCH --time=06:00:00
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ao1g22@soton.ac.uk
+#SBATCH --array=0-19          # 5 seeds x 4 conditions (dropping shd_max_former)
+#SBATCH -o slurm_logs/shd_%A_%a.out
 
-# ---------- environment ----------
-module load conda
-conda activate maxformer       # adjust to your environment name
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate spens-seq
 
-export PYTHONPATH="${SLURM_SUBMIT_DIR}:${PYTHONPATH}"
-cd "${SLURM_SUBMIT_DIR}"
+export OMP_NUM_THREADS=8
+
+export LD_LIBRARY_PATH=/home/ao1g22/.conda/envs/spens-seq/lib/python3.11/site-packages/nvidia/cublas/lib:/home/ao1g22/.conda/envs/spens-seq/lib/python3.11/site-packages/nvidia/cuda_runtime/lib:/home/ao1g22/.conda/envs/spens-seq/lib/python3.11/site-packages/nvidia/cudnn/lib:/home/ao1g22/.conda/envs/spens-seq/lib/python3.11/site-packages/nvidia/cufft/lib:/home/ao1g22/.conda/envs/spens-seq/lib/python3.11/site-packages/nvidia/curand/lib:/home/ao1g22/.conda/envs/spens-seq/lib/python3.11/site-packages/nvidia/cusolver/lib:/home/ao1g22/.conda/envs/spens-seq/lib/python3.11/site-packages/nvidia/cusparse/lib:/home/ao1g22/.conda/envs/spens-seq/lib/python3.11/site-packages/nvidia/nccl/lib:$LD_LIBRARY_PATH
+
+# ---------- paths ----------
+WORK_DIR=/iridisfs/home/ao1g22/comp6228/dpdl
+DATA_PATH=/iridisfs/home/ao1g22/comp6228/dpdl/data/shd
+
+cd "${WORK_DIR}"
 mkdir -p slurm_logs
 
 # ---------- parameter grid ----------
+# 4 conditions x 5 seeds = 20 jobs (array 0-19)
+CONDITIONS=(shd_snn_avg shd_snn_max shd_ann_avg shd_ann_max)
 SEEDS=(42 123 456 789 1234)
-CONDITIONS=(shd_snn_avg shd_snn_max shd_max_former shd_ann_avg shd_ann_max)
 
-N_SEEDS=${#SEEDS[@]}
-N_CONDITIONS=${#CONDITIONS[@]}
+N_CONDITIONS=${#CONDITIONS[@]}   # 4
 
-SEED_IDX=$(( SLURM_ARRAY_TASK_ID % N_SEEDS ))
-COND_IDX=$(( SLURM_ARRAY_TASK_ID / N_SEEDS ))
+COND_IDX=$(( SLURM_ARRAY_TASK_ID / ${#SEEDS[@]} ))
+SEED_IDX=$(( SLURM_ARRAY_TASK_ID % ${#SEEDS[@]} ))
 
-SEED=${SEEDS[$SEED_IDX]}
 MODEL=${CONDITIONS[$COND_IDX]}
-
-# ---------- paths ----------
-# Edit this to point at your SHD data directory on Iridis scratch
-DATA_PATH="/scratch/${USER}/data/shd"
+SEED=${SEEDS[$SEED_IDX]}
 
 EXP_NAME="${MODEL}_T16_seed${SEED}"
-OUTPUT_DIR="./logs"
 
-echo "Job ${SLURM_ARRAY_TASK_ID}: model=${MODEL} seed=${SEED}"
-echo "Output: ${OUTPUT_DIR}/${EXP_NAME}"
+echo "Job ${SLURM_ARRAY_TASK_ID}: model=${MODEL}  seed=${SEED}"
+echo "Output: logs/${EXP_NAME}"
 
-# ---------- training ----------
 python train.py \
     -c shd.yaml \
-    --model       "${MODEL}" \
-    --data-path   "${DATA_PATH}" \
-    --seed        "${SEED}" \
-    --experiment  "${EXP_NAME}" \
-    --output-dir  "${OUTPUT_DIR}" \
-    --device      cuda:0
+    --model      "${MODEL}" \
+    --data-path  "${DATA_PATH}" \
+    --seed       "${SEED}" \
+    --experiment "${EXP_NAME}" \
+    --output-dir ./logs \
+    --device     cuda:0
 
 echo "Job ${SLURM_ARRAY_TASK_ID} complete."
