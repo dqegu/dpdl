@@ -31,11 +31,11 @@ class S_MLP1d(nn.Module):
 
         self.fc1_conv = nn.Conv1d(in_features, hidden_features, kernel_size=1)
         self.fc1_bn   = nn.BatchNorm1d(hidden_features)
-        self.fc1_lif  = MultiStepLIFNode(detach_reset=True, backend='cupy')
+        self.fc1_lif  = MultiStepLIFNode(detach_reset=True, backend='torch')
 
         self.fc2_conv = nn.Conv1d(hidden_features, out_features, kernel_size=1)
         self.fc2_bn   = nn.BatchNorm1d(out_features)
-        self.fc2_lif  = MultiStepLIFNode(detach_reset=True, backend='cupy')
+        self.fc2_lif  = MultiStepLIFNode(detach_reset=True, backend='torch')
 
         self.c_hidden = hidden_features
         self.c_output = out_features
@@ -149,7 +149,7 @@ class DWCMixer1d(nn.Module):
         self.conv        = nn.Conv1d(dim, dim, kernel_size=kernel_size,
                                      padding=kernel_size // 2, groups=dim)
         self.conv_bn     = nn.BatchNorm1d(dim)
-        self.conv_neuron = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='cupy')
+        self.conv_neuron = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='torch')
 
     def forward(self, x):
         T, B, C, L = x.shape
@@ -186,22 +186,22 @@ class SSA1d(nn.Module):
         self.num_heads = num_heads
         self.scale     = 0.125
 
-        self.x_lif = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='cupy')
+        self.x_lif = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='torch')
 
         self.q_conv = nn.Conv1d(dim, dim, kernel_size=1, bias=False)
         self.q_bn   = nn.BatchNorm1d(dim)
-        self.q_lif  = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='cupy')
+        self.q_lif  = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='torch')
 
         self.k_conv = nn.Conv1d(dim, dim, kernel_size=1, bias=False)
         self.k_bn   = nn.BatchNorm1d(dim)
-        self.k_lif  = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='cupy')
+        self.k_lif  = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='torch')
 
         self.v_conv = nn.Conv1d(dim, dim, kernel_size=1, bias=False)
         self.v_bn   = nn.BatchNorm1d(dim)
-        self.v_lif  = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='cupy')
+        self.v_lif  = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='torch')
 
         self.attn_lif = MultiStepLIFNode(tau=2.0, v_threshold=0.5,
-                                          detach_reset=True, backend='cupy')
+                                          detach_reset=True, backend='torch')
 
         self.proj_conv = nn.Conv1d(dim, dim, kernel_size=1)
         self.proj_bn   = nn.BatchNorm1d(dim)

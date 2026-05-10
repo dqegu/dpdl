@@ -22,7 +22,7 @@ class Embed1d(nn.Module):
     def __init__(self, in_channels, out_channels,
                  kernel_size=3, stride=1, padding=1, shortcut=False):
         super().__init__()
-        self.embed_lif = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='cupy')
+        self.embed_lif = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='torch')
         self.embed_conv = nn.Conv1d(in_channels, out_channels,
                                     kernel_size=kernel_size, stride=stride,
                                     padding=padding, bias=False)
@@ -48,7 +48,7 @@ class MaxEmbed1d(nn.Module):
     def __init__(self, in_channels, out_channels,
                  kernel_size=3, stride=1, padding=1, shortcut=False):
         super().__init__()
-        self.embed_lif = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='cupy')
+        self.embed_lif = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='torch')
         self.embed_conv = nn.Conv1d(in_channels, out_channels,
                                     kernel_size=kernel_size, stride=stride,
                                     padding=padding, bias=False)
@@ -78,7 +78,7 @@ class AvgEmbed1d(nn.Module):
     def __init__(self, in_channels, out_channels,
                  kernel_size=3, stride=1, padding=1, shortcut=False):
         super().__init__()
-        self.embed_lif = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='cupy')
+        self.embed_lif = MultiStepLIFNode(tau=2.0, detach_reset=True, backend='torch')
         self.embed_conv = nn.Conv1d(in_channels, out_channels,
                                     kernel_size=kernel_size, stride=stride,
                                     padding=padding, bias=False)
