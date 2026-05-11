@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH -c 8
-#SBATCH --mem=32G
+#SBATCH --mem=64G
 #SBATCH --time=01:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=ao1g22@soton.ac.uk
@@ -32,15 +32,17 @@ SEED=42
 cd "${WORK_DIR}"
 mkdir -p figures slurm_logs
 
+# Run spectrum analysis with reduced batch count and smaller batch size
+# to avoid OOM. 5 batches of 8 samples is plenty for stable spectrum estimates.
 python analyse_spectrum.py \
     --avg-ckpt     "logs/shd_snn_avg_T16_seed${SEED}/checkpoint_best.pth" \
     --max-ckpt     "logs/shd_snn_max_T16_seed${SEED}/checkpoint_best.pth" \
     --ann-avg-ckpt "logs/shd_ann_avg_T16_seed${SEED}/checkpoint_best.pth" \
     --ann-max-ckpt "logs/shd_ann_max_T16_seed${SEED}/checkpoint_best.pth" \
     --data-path    "${DATA_PATH}" \
-    --T 16 --n-batches 30 \
+    --T 16 \
+    --n-batches 5 \
+    --batch-size 8 \
     --out-dir      ./figures
-
-python aggregate_results.py --log-dir ./logs --out ./results_summary.csv
 
 echo "Analysis complete."

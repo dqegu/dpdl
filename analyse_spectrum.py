@@ -268,6 +268,7 @@ def main():
     parser.add_argument('--data-path',    default='./data')
     parser.add_argument('--T',            default=16, type=int)
     parser.add_argument('--n-batches',    default=20, type=int)
+    parser.add_argument('--batch-size',   default=8,  type=int)
     parser.add_argument('--hf-threshold', default=0.3, type=float)
     parser.add_argument('--out-dir',      default='./figures')
     args = parser.parse_args()
@@ -277,7 +278,7 @@ def main():
     print(f'Device: {device}  T={args.T}  n_batches={args.n_batches}')
 
     _, test_loader = get_shd_dataloaders(
-        args.data_path, T=args.T, batch_size=16, num_workers=2)
+        args.data_path, T=args.T, batch_size=getattr(args, 'batch_size', 8), num_workers=2)
 
     to_analyse = {'SNN-Avg': ('shd_snn_avg', args.avg_ckpt),
                   'SNN-Max': ('shd_snn_max', args.max_ckpt)}
